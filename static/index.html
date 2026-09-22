@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>水库入库流量与泄洪调度台</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">▰</span>
+      <div>
+        <h1>水库入库流量与泄洪调度台</h1>
+        <p id="event-title">洪水过程线加载中…</p>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="reservoir-tabs" id="reservoir-tabs"></div>
+      <div class="strategy-switch" id="strategy-switch">
+        <button data-strategy="A" class="active">A · 库容查表削峰</button>
+        <button data-strategy="B">B · 涨速提前预泄</button>
+        <button data-strategy="manual">手动调度</button>
+      </div>
+      <label class="safety-toggle">
+        <input type="checkbox" id="safety-cut" />
+        <span>下游安全流量下调20%</span>
+      </label>
+      <button id="btn-selfcheck" class="ghost">交付自检</button>
+    </div>
+  </header>
+
+  <section class="issue-bar" id="issue-bar" hidden></section>
+
+  <main class="layout">
+    <section class="panel chart-panel">
+      <div class="panel-head">
+        <h2>水位 / 流量过程线</h2>
+        <div class="legend">
+          <span class="lg lg-inflow">入库流量</span>
+          <span class="lg lg-release">闸门下泄</span>
+          <span class="lg lg-level">库水位</span>
+          <span class="lg lg-limit">汛限水位</span>
+          <span class="lg lg-peak">洪峰</span>
+        </div>
+      </div>
+      <canvas id="chart" width="900" height="430"></canvas>
+      <div class="chart-hint">点击过程线某小时可在右侧闸门表定位该时段；手动调度下可逐档拖闸，过程线立即重算。</div>
+    </section>
+
+    <section class="panel side-panel">
+      <div class="kpi-cards" id="kpi-cards"></div>
+
+      <div class="panel-head">
+        <h2>闸门开度表（第 <span id="selected-hour">0</span> 小时）</h2>
+        <button id="btn-clear-manual" class="ghost small" hidden>撤销全部手动操作</button>
+      </div>
+      <div class="gate-table-wrap">
+        <table class="gate-table" id="gate-table">
+          <thead>
+            <tr><th>闸门</th><th>编号</th><th>当前档位</th><th>下泄 m³/s</th><th>逐档调整</th></tr>
+          </thead>
+          <tbody id="gate-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="panel-head"><h2>下游河道（安全流量 / 超安全时段）</h2></div>
+      <table class="reach-table" id="reach-table">
+        <thead>
+          <tr><th>河段村镇</th><th>安全流量</th><th>最大流量</th><th>超安全时段</th><th>预警发布（倒推）</th></tr>
+        </thead>
+        <tbody id="reach-tbody"></tbody>
+      </table>
+
+      <div class="panel-head"><h2>当前时段调度依据</h2></div>
+      <ul class="basis-list" id="basis-list"></ul>
+    </section>
+  </main>
+
+  <section class="ledger">
+    <div class="panel-head">
+      <h2>值班室实时台账（双人并发，乐观锁冲突检测）</h2>
+      <div class="ledger-meta" id="ledger-meta"></div>
+    </div>
+    <div class="ledger-grid">
+      <div class="ledger-operator" id="op1-card">
+        <h3>值班员甲</h3>
+        <div class="ledger-state" id="ledger-state-1"></div>
+      </div>
+      <div class="ledger-operator" id="op2-card">
+        <h3>值班员乙</h3>
+        <div class="ledger-state" id="ledger-state-2"></div>
+      </div>
+    </div>
+    <div class="ledger-log" id="ledger-log"></div>
+  </section>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="modal-title">交付自检</h2>
+        <button id="modal-close" class="ghost">关闭</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <script src="ledger.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
